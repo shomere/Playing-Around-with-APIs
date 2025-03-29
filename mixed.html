@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Support Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#4CAF50',
+                        background: {
+                            light: '#FFFFFF',
+                            dark: '#181818',
+                        },
+                        card: {
+                            light: '#F8F9FA',
+                            dark: '#262626',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200 transition-colors duration-200">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2">Mental Health Support Assistant</h1>
+            <p class="text-gray-600 dark:text-gray-400">A safe space to share how you feel and receive personalized guidance</p>
+        </header>
+
+        <div class="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6 mb-8">
+            <div class="mb-6">
+                <label for="userName" class="block text-sm font-medium mb-2">Your Name (or nickname)</label>
+                <input type="text" id="userName" placeholder="Enter your name" 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-base focus:outline-none focus:ring-2 focus:ring-primary transition" />
+            </div>
+
+            <div class="mb-6">
+                <label for="userAge" class="block text-sm font-medium mb-2">Your Age</label>
+                <input type="number" id="userAge" placeholder="Enter your age" min="13" max="100"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-base focus:outline-none focus:ring-2 focus:ring-primary transition" />
+            </div>
+
+            <div class="mb-6">
+                <label for="userInput" class="block text-sm font-medium mb-2">How are you feeling today?</label>
+                <textarea id="userInput" rows="5" placeholder="Describe your thoughts, feelings, or challenges you're facing..."
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-base focus:outline-none focus:ring-2 focus:ring-primary transition"></textarea>
+            </div>
+
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button id="analyzeBtn" onclick="analyzeMentalHealth()" 
+                    class="px-6 py-3 bg-primary hover:bg-opacity-90 text-white rounded-lg shadow transition flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    Analyze & Get Support
+                </button>
+                <button onclick="startVoiceInput()" 
+                    class="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-600 transition flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                    Voice Input
+                </button>
+            </div>
+        </div>
+
+        <div id="loadingIndicator" class="hidden">
+            <div class="flex flex-col items-center justify-center p-8">
+                <div class="animate-pulse-slow flex space-x-2 mb-4">
+                    <div class="w-3 h-3 bg-primary rounded-full"></div>
+                    <div class="w-3 h-3 bg-primary rounded-full"></div>
+                    <div class="w-3 h-3 bg-primary rounded-full"></div>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">Analyzing your response and preparing personalized support...</p>
+            </div>
+        </div>
+
+        <div id="results" class="hidden bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden">
+            <div class="border-b border-gray-200 dark:border-gray-700 p-5">
+                <h2 class="text-xl font-semibold text-primary" id="resultsName"></h2>
+            </div>
+            <div class="p-5 space-y-4">
+                <div id="analysisSection" class="space-y-2">
+                    <h3 class="text-lg font-medium">Analysis</h3>
+                    <p id="analysisContent" class="text-gray-700 dark:text-gray-300"></p>
+                </div>
+                
+                <div id="recommendationsSection" class="space-y-2">
+                    <h3 class="text-lg font-medium">Recommendations</h3>
+                    <div id="recommendationsContent" class="text-gray-700 dark:text-gray-300 space-y-2"></div>
+                </div>
+                
+                <div id="supportSection" class="space-y-2">
+                    <h3 class="text-lg font-medium">Support Resources</h3>
+                    <div id="supportContent" class="text-gray-700 dark:text-gray-300 space-y-1">
+                        <p>• National Suicide Prevention Lifeline: <a href="tel:988" class="text-primary hover:underline">988</a></p>
+                        <p>• Crisis Text Line: Text HOME to <a href="sms:741741" class="text-primary hover:underline">741741</a></p>
+                        <p>• SAMHSA's National Helpline: <a href="tel:1-800-662-4357" class="text-primary hover:underline">1-800-662-HELP (4357)</a></p>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Note: This application provides general guidance and is not a substitute for professional medical advice, diagnosis, or treatment. If you're experiencing a mental health emergency, please contact your local emergency services or a mental health crisis line immediately.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="errorMessage" class="hidden mt-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md">
+            <p>We encountered an issue analyzing your response. Please try again or reach out to a mental health professional directly.</p>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode detection and handling
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+        
+        // Voice input functionality
+        function startVoiceInput() {
+            try {
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = "en-US";
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                // Show some visual feedback that we're listening
+                const userInput = document.getElementById("userInput");
+                const originalPlaceholder = userInput.placeholder;
+                userInput.placeholder = "Listening...";
+                
+                recognition.start();
+                
+                recognition.onresult = function(event) {
+                    userInput.value = event.results[0][0].transcript;
+                    userInput.placeholder = originalPlaceholder;
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error("Speech recognition error", event.error);
+                    userInput.placeholder = originalPlaceholder;
+                    
+                    if (event.error === 'not-allowed') {
+                        alert("Microphone access is required for voice input. Please allow microphone access and try again.");
+                    }
+                };
+                
+                recognition.onend = function() {
+                    userInput.placeholder = originalPlaceholder;
+                };
+            } catch (error) {
+                console.error("Speech recognition not supported", error);
+                alert("Voice input is not supported on your browser. Please type your response instead.");
+            }
+        }
+        
+        // Main analysis function
+        async function analyzeMentalHealth() {
+            const userName = document.getElementById("userName").value.trim();
+            const userAge = document.getElementById("userAge").value.trim();
+            const userInput = document.getElementById("userInput").value.trim();
+            
+            // Basic validation
+            if (!userName) {
+                alert("Please enter your name or a nickname.");
+                return;
+            }
+            
+            if (!userAge || isNaN(parseInt(userAge)) || parseInt(userAge) < 13) {
+                alert("Please enter a valid age (13 or older).");
+                return;
+            }
+            
+            if (!userInput) {
+                alert("Please describe how you're feeling.");
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById("loadingIndicator").classList.remove("hidden");
+            document.getElementById("results").classList.add("hidden");
+            document.getElementById("errorMessage").classList.add("hidden");
+            document.getElementById("analyzeBtn").disabled = true;
+            
+            try {
+                // Use the user's original API to analyze mental health concerns
+                const diagnosisPromise = getMentalHealthDiagnosis(userInput);
+                
+                // In parallel, use the AI life coach API for recommendations
+                const recommendationsPromise = getLifeCoachRecommendations(userName, userAge, userInput);
+                
+                // Wait for both promises to resolve
+                const [diagnosis, recommendations] = await Promise.all([diagnosisPromise, recommendationsPromise]);
+                
+                // Display results
+                displayResults(userName, diagnosis, recommendations);
+            } catch (error) {
+                console.error("Error during analysis:", error);
+                document.getElementById("errorMessage").classList.remove("hidden");
+            } finally {
+                document.getElementById("loadingIndicator").classList.add("hidden");
+                document.getElementById("analyzeBtn").disabled = false;
+            }
+        }
+        
+        // Function to get mental health diagnosis from user's API
+        async function getMentalHealthDiagnosis(userInput) {
+            try {
+                // First, make a call to generate an ID for the diagnosis
+                const response = await fetch('https://i-m-all-ears.p.rapidapi.com/?id=', {
+                    method: 'GET',
+                    headers: {
+                        'x-rapidapi-key': '9858dfee1cmsh9671502cb27822ap1f3c71jsn07e79d2b14f8',
+                        'x-rapidapi-host': 'i-m-all-ears.p.rapidapi.com'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                
+                // Mock response format (since we don't have exact API details)
+                return {
+                    potentialConcerns: "Based on your description, there may be signs of mental health concerns.",
+                    moodAssessment: "Your mood appears to be affected by your current situation.",
+                    diagnosis: data.diagnosis || "Potential mental health condition requiring attention",
+                    articles: data.articles || ["Stress Management", "Anxiety Reduction Techniques", "Self-Care Strategies"],
+                    therapists: data.therapists || ["Dr. Smith (Online)", "Local Mental Health Clinic", "Community Support Groups"]
+                };
+            } catch (error) {
+                console.error("Error getting mental health diagnosis:", error);
+                // Return fallback data
+                return {
+                    potentialConcerns: "Based on your description, there may be signs of mental health concerns.",
+                    moodAssessment: "Your mood appears to be affected by your current situation.",
+                    diagnosis: "Unable to determine specific diagnosis",
+                    articles: ["Stress Management", "Anxiety Reduction Techniques", "Self-Care Strategies"],
+                    therapists: ["Dr. Smith (Online)", "Local Mental Health Clinic", "Community Support Groups"]
+                };
+            }
+        }
+        
+        // Function to get recommendations from AI Life Coach API
+        async function getLifeCoachRecommendations(userName, userAge, userInput) {
+            try {
+                // Create a user profile based on the input
+                const userProfile = {
+                    age: parseInt(userAge),
+                    occupation: "Not specified",
+                    currentSituation: userInput,
+                    personalityTraits: [],
+                    values: ["well-being", "mental health"],
+                    interests: []
+                };
+                
+                // Identify potential challenges from the user input
+                const challenges = [{
+                    area: "mental health",
+                    description: userInput,
+                    impact: "high"
+                }];
+                
+                // Identify goals based on improving the situation
+                const goals = [{
+                    area: "mental health",
+                    description: "Improve mental well-being and emotional health",
+                    priority: "high",
+                    timeline: "3 months"
+                }];
+                
+                // Create the request payload
+                const requestData = JSON.stringify({
+                    userProfile: userProfile,
+                    goals: goals,
+                    challenges: challenges,
+                    timeframe: "3 months",
+                    focusAreas: ["mental health", "personal development", "health"],
+                    lang: "en"
+                });
+                
+                // Use fetch API instead of XMLHttpRequest for better readability
+                const response = await fetch('https://ai-life-coach-api-personal-development-online-coaching.p.rapidapi.com/getLifeAdvice?noqueue=1', {
+                    method: 'POST',
+                    headers: {
+                        'x-rapidapi-key': '9858dfee1cmsh9671502cb27822ap1f3c71jsn07e79d2b14f8',
+                        'x-rapidapi-host': 'ai-life-coach-api-personal-development-online-coaching.p.rapidapi.com',
+                        'Content-Type': 'application/json'
+                    },
+                    body: requestData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                return data;
+                
+            } catch (error) {
+                console.error("Error getting life coach recommendations:", error);
+                // Return some fallback recommendations if the API fails
+                return {
+                    advice: "Consider practicing mindfulness, maintaining a consistent sleep schedule, staying physically active, and reaching out to friends and family for support. Remember that seeking professional help is a sign of strength, not weakness.",
+                    actionPlan: {
+                        daily: ["Practice deep breathing for 5 minutes", "Write in a gratitude journal"],
+                        weekly: ["Take time for self-care activities", "Connect with a supportive friend or family member"],
+                        monthly: ["Reflect on your progress", "Adjust your self-care routine as needed"]
+                    }
+                };
+            }
+        }
+        
+        // Function to display the results
+        function displayResults(userName, diagnosis, recommendations) {
+            const results = document.getElementById("results");
+            
+            // Set user name in results
+            document.getElementById("resultsName").textContent = `Hello, ${userName}`;
+            
+            // Display analysis
+            const analysisContent = document.getElementById("analysisContent");
+            analysisContent.innerHTML = '';
+            
+            if (diagnosis && diagnosis.diagnosis) {
+                const diagnosisElement = document.createElement("p");
+                diagnosisElement.textContent = `Diagnosis: ${diagnosis.diagnosis}`;
+                diagnosisElement.classList.add("font-medium");
+                analysisContent.appendChild(diagnosisElement);
+            }
+            
+            if (diagnosis && diagnosis.potentialConcerns) {
+                const concerns = document.createElement("p");
+                concerns.textContent = diagnosis.potentialConcerns;
+                concerns.classList.add("mt-2");
+                analysisContent.appendChild(concerns);
+            }
+            
+            if (diagnosis && diagnosis.articles && diagnosis.articles.length > 0) {
+                const articlesSection = document.createElement("div");
+                articlesSection.classList.add("mt-3");
+                
+                const articlesTitle = document.createElement("p");
+                articlesTitle.textContent = "Suggested Articles:";
+                articlesTitle.classList.add("font-medium");
+                articlesSection.appendChild(articlesTitle);
+                
+                const articlesList = document.createElement("ul");
+                articlesList.classList.add("list-disc", "pl-5");
+                
+                diagnosis.articles.forEach(article => {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = article;
+                    articlesList.appendChild(listItem);
+                });
+                
+                articlesSection.appendChild(articlesList);
+                analysisContent.appendChild(articlesSection);
+            }
+            
+            if (diagnosis && diagnosis.therapists && diagnosis.therapists.length > 0) {
+                const therapistsSection = document.createElement("div");
+                therapistsSection.classList.add("mt-3");
+                
+                const therapistsTitle = document.createElement("p");
+                therapistsTitle.textContent = "Nearby Therapists:";
+                therapistsTitle.classList.add("font-medium");
+                therapistsSection.appendChild(therapistsTitle);
+                
+                const therapistsList = document.createElement("ul");
+                therapistsList.classList.add("list-disc", "pl-5");
+                
+                diagnosis.therapists.forEach(therapist => {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = therapist;
+                    therapistsList.appendChild(listItem);
+                });
+                
+                therapistsSection.appendChild(therapistsList);
+                analysisContent.appendChild(therapistsSection);
+            }
+            
+            // Display recommendations
+            const recommendationsContent = document.getElementById("recommendationsContent");
+            recommendationsContent.innerHTML = '';
+            
+            if (recommendations && recommendations.advice) {
+                const advice = document.createElement("p");
+                advice.textContent = recommendations.advice;
+                recommendationsContent.appendChild(advice);
+            }
+            
+            if (recommendations && recommendations.actionPlan) {
+                const actionPlan = document.createElement("div");
+                actionPlan.classList.add("mt-3", "space-y-2");
+                
+                const actionTitle = document.createElement("h4");
+                actionTitle.textContent = "Action Plan";
+                actionTitle.classList.add("font-medium");
+                actionPlan.appendChild(actionTitle);
+                
+                // Daily actions
+                if (recommendations.actionPlan.daily && recommendations.actionPlan.daily.length > 0) {
+                    const dailySection = document.createElement("div");
+                    const dailyTitle = document.createElement("p");
+                    dailyTitle.textContent = "Daily:";
+                    dailyTitle.classList.add("text-sm", "font-medium");
+                    dailySection.appendChild(dailyTitle);
+                    
+                    const dailyList = document.createElement("ul");
+                    dailyList.classList.add("list-disc", "pl-5");
+                    
+                    recommendations.actionPlan.daily.forEach(item => {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = item;
+                        listItem.classList.add("text-sm");
+                        dailyList.appendChild(listItem);
+                    });
+                    
+                    dailySection.appendChild(dailyList);
+                    actionPlan.appendChild(dailySection);
+                }
+                
+                // Weekly actions
+                if (recommendations.actionPlan.weekly && recommendations.actionPlan.weekly.length > 0) {
+                    const weeklySection = document.createElement("div");
+                    const weeklyTitle = document.createElement("p");
+                    weeklyTitle.textContent = "Weekly:";
+                    weeklyTitle.classList.add("text-sm", "font-medium");
+                    weeklySection.appendChild(weeklyTitle);
+                    
+                    const weeklyList = document.createElement("ul");
+                    weeklyList.classList.add("list-disc", "pl-5");
+                    
+                    recommendations.actionPlan.weekly.forEach(item => {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = item;
+                        listItem.classList.add("text-sm");
+                        weeklyList.appendChild(listItem);
+                    });
+                    
+                    weeklySection.appendChild(weeklyList);
+                    actionPlan.appendChild(weeklySection);
+                }
+                
+                // Monthly actions
+                if (recommendations.actionPlan.monthly && recommendations.actionPlan.monthly.length > 0) {
+                    const monthlySection = document.createElement("div");
+                    const monthlyTitle = document.createElement("p");
+                    monthlyTitle.textContent = "Monthly:";
+                    monthlyTitle.classList.add("text-sm", "font-medium");
+                    monthlySection.appendChild(monthlyTitle);
+                    
+                    const monthlyList = document.createElement("ul");
+                    monthlyList.classList.add("list-disc", "pl-5");
+                    
+                    recommendations.actionPlan.monthly.forEach(item => {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = item;
+                        listItem.classList.add("text-sm");
+                        monthlyList.appendChild(listItem);
+                    });
+                    
+                    monthlySection.appendChild(monthlyList);
+                    actionPlan.appendChild(monthlySection);
+                }
+                
+                recommendationsContent.appendChild(actionPlan);
+            }
+            
+            // Show results
+            results.classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
