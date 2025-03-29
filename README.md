@@ -1,5 +1,6 @@
 # Playing-Around-with-APIs
-
+# This link below is for a video that demonstrates how this web app works:
+https://youtu.be/_SltVX-oNCk
 # Mental Health Support Assistant
 
 ## Overview
